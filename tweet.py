@@ -1,7 +1,7 @@
 import random
 import time
 from twython import Twython
-from common import twitter_cred, env_is_dev
+from common import twitter_cred
 
 class Twy_REST(object):
     '''If run on remote, completes action via Twython and prints output. /
@@ -12,17 +12,16 @@ class Twy_REST(object):
 
     def update_status_with_media(self, text, img_path):
         # create temp file
-        if not env_is_dev:
-            with open(img_path, 'r') as image_file:
-                print("Uploading Image: %s" % img_path)
+        with open(img_path, 'r') as image_file:
+            print("Uploading Image: %s" % img_path)
 
-                upload_response = self.twitter.upload_media(media=image_file)
-                print("Uploaded as media ID %s. Updating status." % upload_response)
+            upload_response = self.twitter.upload_media(media=image_file)
+            print("Uploaded as media ID %s. Updating status." % upload_response)
 
-                media_id = upload_response['media_id']
+            media_id = upload_response['media_id']
 
-                time.sleep(5)
+            time.sleep(5)
 
-                self.twitter.update_status(
-                    status=text,
-                    media_ids=[media_id])
+            self.twitter.update_status(
+                status=text,
+                media_ids=[media_id])

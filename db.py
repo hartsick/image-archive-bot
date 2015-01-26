@@ -58,6 +58,7 @@ class DB(object):
             if order_no not in order_nos:
                 self._create_record(session, record)
                 order_nos.append(order_no)
+                print "Adding record: {0}".format(record)
             else:
                 print "Order #{0} already found. Skipping.".format(record['order_no'])
 

@@ -4,7 +4,6 @@ import re
 from selenium import webdriver
 from searchterms import searchterms
 from db import DB
-from common import db_cred
 
 def navigate_to_content_frame(driver):
     # locate iframe & switch to it
@@ -67,7 +66,7 @@ if __name__ == "__main__":
     for term in searchterms:
         # Create new session
         driver = webdriver.Chrome(executable_path = '/usr/local/chromedriver/chromedriver')
-        driver.implicitly_wait(5)
+        driver.implicitly_wait(7)
 
         driver.get('http://photos.lapl.org')
 
@@ -103,8 +102,8 @@ if __name__ == "__main__":
             record_hash = extract_record_info(driver, data)
             records.append(record_hash)
 
-            # in batches of 10
-            if count % 2 == 0:
+            # in batches of 100
+            if count % 100 == 0:
                 db.create_record_batch(records)
                 records = []
             # continue to next try

@@ -1,6 +1,6 @@
 from botutils import images as Image
 from db import DB
-from common import redis_init
+from common import redis_init, env_is_dev
 from tweet import Twy_REST
 
 def get_untweeted_record():
@@ -12,7 +12,8 @@ def get_untweeted_record():
 
         if not redis.sismember('tweeted_oids', record.order_no):
             new_record = record
-            redis.sadd('tweeted_oids', record.order_no)
+            if not env_is_dev:
+                redis.sadd('tweeted_oids', record.order_no)
 
     return new_record
 
@@ -25,18 +26,36 @@ def format_name(full_name):
 
     return " ".join(names)
 
+def format_info(info):
+    info_array = info.split("\n")
+
+    if len(info_array) > 2:
+        return info_array[0].strip()
+    else:
+        return None
+
+
 def compose_message(record):
     print record.__dict__
-    title   = record.title.strip()
-    date   = record.date.strip()
-    url     = record.image_url.strip()
+    title               = record.title.strip()
+    collection_info     = format_info(record.filing_info)
+    date                = record.date.strip()
+    url                 = record.image_url.strip()
+    order_no            = record.order_no.strip()
+
+    message = "{0}, {1} ".format(title, date)
 
     if record.photographer:
         photog  = format_name(record.photographer)
-        message = "{0}, {1} | photo: {2} | LAPL collection: {3}".format(title, date, photog, url)
+        message += "photo {0} ".format(photog)
+    if collection_info:
+        message += "| {0}, ".format(collection_info)
     else:
-        message = "{0}, {1} | LAPL collection: {2}".format(title, date, url)
+        message += "| "
 
+    message += "LAPL #{0} {1}".format(order_no, url)
+
+    print "Composed: {0}".format(message)
     return message
 
 
@@ -48,4 +67,5 @@ if __name__ == "__main__":
 
     message = compose_message(record)
 
-    Twy_REST().update_status_with_media(message, img_path)
+    if not env_is_dev:
+        Twy_REST().update_status_with_media(message, img_path)
