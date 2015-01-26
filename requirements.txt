@@ -1,0 +1,6 @@
+SQLAlchemy==0.9.8
+psycopg2==2.5.4
+requests==2.5.1
+selenium==2.44.0
+wsgiref==0.1.2
+git+https://github.com/jimmytheleaf/botutils.git

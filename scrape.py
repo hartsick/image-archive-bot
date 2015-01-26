@@ -62,7 +62,7 @@ def extract_record_info(driver, data):
 
 if __name__ == "__main__":
     # open DB connection
-    db = DB(db_cred)
+    db = DB()
 
     for term in searchterms:
         # Create new session

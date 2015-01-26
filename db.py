@@ -2,6 +2,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String
+from common import db_cred
+import random
 
 Base = declarative_base()
 
@@ -25,8 +27,8 @@ class ImageRecord(Base):
            self.title, self.order_no, self.photographer, self.image_url, self.filing_info, self.date, self.description, self.notes, self.summary, self.subjects)
 
 class DB(object):
-    def __init__(self, db_string):
-        self.engine = create_engine(db_string, echo=True)
+    def __init__(self):
+        self.engine = create_engine(db_cred, echo=True)
         self.Session = sessionmaker(bind=self.engine)
 
     def _create_session(self):
@@ -60,3 +62,17 @@ class DB(object):
                 print "Order #{0} already found. Skipping.".format(record['order_no'])
 
         self._commit_session(session)
+
+    def retrieve_record(self):
+        session = self._create_session()
+
+        # get random record
+        record = None
+        records = session.query(ImageRecord)
+
+        rand_index = random.randrange(0, session.query(ImageRecord).count())
+        record = records[rand_index]
+
+        session.close()
+
+        return record
