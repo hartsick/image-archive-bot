@@ -1,6 +1,6 @@
 searchterms = [
-    "dog",
-    "cat"
+    "dog"
+    # "cat",
     # "train",
     # "oil",
     # "robot"
