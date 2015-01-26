@@ -28,7 +28,7 @@ class ImageRecord(Base):
 
 class DB(object):
     def __init__(self):
-        self.engine = create_engine(db_cred, echo=True)
+        self.engine = create_engine(db_cred, echo=False)
         self.Session = sessionmaker(bind=self.engine)
 
     def _create_session(self):
