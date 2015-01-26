@@ -1,6 +1,7 @@
 from botutils import images as Image
 from db import DB
 from common import redis_init
+from tweet import Twy_REST
 
 def get_untweeted_record():
     redis = redis_init()
@@ -14,12 +15,6 @@ def get_untweeted_record():
             redis.sadd('tweeted_oids', record.order_no)
 
     return new_record
-
-def get_src_image(url):
-    record = get_untweeted_record()
-    image = Image.get_image_from_url(record.image_url)
-
-    return image
 
 def format_name(full_name):
     print full_name
@@ -48,9 +43,9 @@ def compose_message(record):
 if __name__ == "__main__":
     record = get_untweeted_record()
 
-    img = get_src_image(record.image_url)
+    img = Image.get_image_from_url(record.image_url)
     img_path = Image.save_and_get_image_path(img)
 
     message = compose_message(record)
 
-    print message
+    Twy_REST().update_status_with_media(message, img_path)
