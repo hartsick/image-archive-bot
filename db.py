@@ -29,33 +29,34 @@ class DB(object):
         self.engine = create_engine(db_string, echo=True)
         self.Session = sessionmaker(bind=self.engine)
 
-    def create_tables(self):
-        Base.metadata.create_all(self.engine)
-
-    def create_session(self):
+    def _create_session(self):
         return self.Session()
 
-    def commit_session(self, session):
+    def _commit_session(self, session):
         session.commit()
         session.close()
 
-    def create_record(self, session, params):
+    def _create_record(self, session, params):
         record = ImageRecord(**params)
         session.add(record)
 
+    def create_tables(self):
+        Base.metadata.create_all(self.engine)
+
     def create_record_batch(self, records):
-        session = self.create_session()
+        session = self._create_session()
 
         # poll existing order_nos
-        order_nos = session.query(ImageRecord.order_no).all()
-        print(order_nos)
+        results = session.query(ImageRecord.order_no).all()
+        order_nos = map(lambda t: t[0], results)
 
         # save only records with unique order_nos
         for record in records:
-            if record['order_no'] not in order_nos:
-                self.create_record(session, record)
-                order_nos.append(record['order_no'])
+            order_no = record['order_no'].encode('utf-8')
+            if order_no not in order_nos:
+                self._create_record(session, record)
+                order_nos.append(order_no)
             else:
                 print "Order #{0} already found. Skipping.".format(record['order_no'])
 
-        self.commit_session(session)
+        self._commit_session(session)

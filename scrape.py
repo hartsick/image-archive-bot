@@ -13,34 +13,51 @@ def navigate_to_content_frame(driver):
     driver.switch_to_frame(element)
 
     # pretend we're human
-    time.sleep(2)
+    time.sleep(1)
 
 def extract_record_info(driver, data):
-    image_url       = data[0].find_elements_by_tag_name('a').get_attribute('href')
-    title           = data[1].find_elements_by_tag_name('a').get_attribute('innerText')
-    photographer    = data[2].find_element_by_tag_name('a').get_attribute('innerText')
-    order_no        = re.sub("[^0-9]", "",data[3].get_attribute('innerText'))
-    filing_info     = data[4].get_attribute('innerText')
-    date            = data[5].get_attribute('innerText')
-    description     = data[6].get_attribute('innerText')
-    notes           = data[7].get_attribute('innerText')
-    summary         = data[8].get_attribute('innerText')
-    subjects        = data[9].get_attribute('innerText')
+    # hacky, trying to account for missing photographer but with no easy way
+    #   to reference the element that contains the photographer info
+    photographer = None
+    index = range(2,9)
+    try:
+        photographer = data[2].find_element_by_tag_name('a').get_attribute('innerText')
+        # Begin count at 3, after photographer
+        index = range(3,10)
+    except Exception as e:
+        print "No photographer found: {0}".format(e)
 
-    record = {
-        'image_url': image_url,
-        'title': title,
-        'photographer': photographer,
-        'order_no': order_no,
-        'filing_info': filing_info,
-        'date': date,
-        'description': description,
-        'notes': notes,
-        'summary': summary,
-        'subjects': subjects
-    }
+    # try again, just ignore the entry if it breaks something
+    try:
+        image_url       = data[0].find_element_by_tag_name('a').get_attribute('href')
+        title           = data[1].find_element_by_tag_name('a').get_attribute('innerText')
 
-    return record
+        # these elements are relative, based on whether photographer is present
+        order_no        = re.sub("[^0-9]", "",data[index.pop(0)].get_attribute('innerText'))
+        filing_info     = data[index.pop(0)].get_attribute('innerText')
+        date            = data[index.pop(0)].get_attribute('innerText')
+        description     = data[index.pop(0)].get_attribute('innerText')
+        notes           = data[index.pop(0)].get_attribute('innerText')
+        summary         = data[index.pop(0)].get_attribute('innerText')
+        subjects        = data[index.pop(0)].get_attribute('innerText')
+
+        record = {
+            'image_url': image_url,
+            'title': title,
+            'photographer': photographer,
+            'order_no': order_no,
+            'filing_info': filing_info,
+            'date': date,
+            'description': description,
+            'notes': notes,
+            'summary': summary,
+            'subjects': subjects
+        }
+
+        return record
+
+    except Exception as e:
+        print e
 
 
 if __name__ == "__main__":
@@ -50,7 +67,7 @@ if __name__ == "__main__":
     for term in searchterms:
         # Create new session
         driver = webdriver.Chrome(executable_path = '/usr/local/chromedriver/chromedriver')
-        driver.implicitly_wait(10)
+        driver.implicitly_wait(5)
 
         driver.get('http://photos.lapl.org')
 
@@ -71,33 +88,34 @@ if __name__ == "__main__":
         link = entry.find_element_by_tag_name('a')
         link.click()
 
-        records = []
         # Get items until failure
+        records = []
+        count = 0
+
         while True:
-            # in batches of 100
-            for index in range(0,5):
-                # PAGE: Individual Record
-                navigate_to_content_frame(driver)
+            count += 1
 
-                data = driver.find_elements_by_css_selector('.BIBtagdata')
+            # PAGE: Individual Record
+            navigate_to_content_frame(driver)
+            data = driver.find_elements_by_css_selector('.BIBtagdata')
 
-                # Extract data
-                try:
-                    record_hash = extract_record_info(driver, data)
-                    records.append(record_hash)
-                except Exception as e:
-                    print "Error finding record info. {0}".format(e)
-                    db.create_record_batch(records)
+            # Extract data
+            record_hash = extract_record_info(driver, data)
+            records.append(record_hash)
 
-                # Continue to next page, or save if no pages left
-                try:
-                    next_link = driver.find_element_by_link_text('Next')
-                    next_link.click()
-                except Exception as e:
-                    print "Error finding link. {0}".format(e)
-                    db.create_record_batch(records)
+            # in batches of 10
+            if count % 2 == 0:
+                db.create_record_batch(records)
+                records = []
+            # continue to next try
+            try:
+                next_link = driver.find_element_by_link_text('Next')
+                next_link.click()
+            except Exception as e:
+                print "End of results. {0}".format(e)
+                break
 
-            db.create_record_batch(records)
+        db.create_record_batch(records)
 
         # End session
         driver.quit()
