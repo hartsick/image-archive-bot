@@ -1,7 +1,6 @@
 Pillow==2.7.0
 SQLAlchemy==0.9.8
 Unipath==1.0
-botutils==0.1
 nltk==3.0.1
 oauthlib==0.7.2
 psycopg2==2.5.4
