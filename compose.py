@@ -1,3 +1,5 @@
+import requests
+import json
 from botutils import images as Image
 from db import DB
 from common import redis_init, env_is_dev
@@ -40,8 +42,10 @@ def compose_message(record):
     title               = record.title.strip()
     collection_info     = format_info(record.filing_info)
     date                = record.date.strip()
-    url                 = record.image_url.strip()
     order_no            = record.order_no.strip()
+
+    long_url            ="http://photos.lapl.org/carlweb/jsp/DoSearch?databaseID=968&count=10&terms={0}&index=w".format(order_no)
+    url                 = shorten_url(long_url)
 
     message = "{0}, {1} ".format(title, date)
 
@@ -49,14 +53,32 @@ def compose_message(record):
         photog  = format_name(record.photographer)
         message += "photo {0} ".format(photog)
     if collection_info:
-        message += "| {0}, ".format(collection_info)
+        message += "| {0} ".format(collection_info)
     else:
         message += "| "
 
-    message += "LAPL #{0} {1}".format(order_no, url)
+    message += "{0}".format(url)
 
     print "Composed: {0}".format(message)
     return message
+
+def shorten_url(url):
+    '''Accepts a to-be shortened URL, then returns a shortened URL using
+    Google's URL Shortener API.
+
+    In the context of this bot, this is both
+    to obscure the source and prevent revealing previews of the URL in
+    the bot's tweets.'''
+
+    post_url = 'https://www.googleapis.com/urlshortener/v1/url'
+    payload = {'longUrl': url}
+    headers = {'content-type': 'application/json'}
+
+    r = requests.post(post_url, data=json.dumps(payload), headers=headers)
+    r_hash = r.json()
+
+    return r_hash['id']
+
 
 
 if __name__ == "__main__":
