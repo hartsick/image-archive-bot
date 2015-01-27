@@ -25,3 +25,5 @@ class Twy_REST(object):
             self.twitter.update_status(
                 status=text,
                 media_ids=[media_id])
+
+            print("Tweet posted: {0}: {1}".format(text, media_id))

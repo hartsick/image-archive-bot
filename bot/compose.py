@@ -59,7 +59,6 @@ def compose_message(record):
 
     message += "{0}".format(url)
 
-    print "Composed: {0}".format(message)
     return message
 
 def shorten_url(url):
@@ -87,4 +86,6 @@ def assemble_tweet():
 
     message = compose_message(record)
 
-    return params[message,img_path]
+    params = [message, img_path]
+
+    return params
