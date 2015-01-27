@@ -1,7 +1,7 @@
 import random
 import time
 from twython import Twython
-from common import twitter_cred
+from config.common import twitter_cred
 
 class Twy_REST(object):
     '''If run on remote, completes action via Twython and prints output. /

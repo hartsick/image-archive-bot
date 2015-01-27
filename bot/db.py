@@ -1,9 +1,9 @@
+import random
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String
-from common import db_cred
-import random
+from config.common import db_cred
 
 Base = declarative_base()
 

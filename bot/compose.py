@@ -1,8 +1,8 @@
 import requests
 import json
 from botutils import images as Image
+from config.common import redis_init, env_is_dev
 from db import DB
-from common import redis_init, env_is_dev
 from tweet import Twy_REST
 
 def get_untweeted_record():
@@ -79,9 +79,7 @@ def shorten_url(url):
 
     return r_hash['id']
 
-
-
-if __name__ == "__main__":
+def assemble_tweet():
     record = get_untweeted_record()
 
     img = Image.get_image_from_url(record.image_url)
@@ -89,5 +87,4 @@ if __name__ == "__main__":
 
     message = compose_message(record)
 
-    if not env_is_dev:
-        Twy_REST().update_status_with_media(message, img_path)
+    return params[message,img_path]

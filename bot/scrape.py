@@ -2,7 +2,7 @@ import random
 import time
 import re
 from selenium import webdriver
-from searchterms import searchterms
+from config.searchterms import searchterms
 from db import DB
 
 def navigate_to_content_frame(driver):
