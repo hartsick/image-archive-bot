@@ -12,9 +12,9 @@ env_is_dev = True if os.environ.has_key('USER') else False
 
 # Set DB url
 if env_is_dev:
-    db_cred = os.environ.get('LAPL_DB_CRED')
+    db_cred = os.getenv('DATABASE_URL', 'postgresql://localhost/lapl_bot')
 else:
-    db_cred = os.environ.get('HEROKU_POSTGRESQL_GRAY_URL')
+    db_cred = os.environ.get('DATABASE_URL')
 
 def redis_init():
 
