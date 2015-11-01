@@ -22,8 +22,10 @@ class Twy_REST(object):
 
             time.sleep(5)
 
+            print("Posting tweet: {0}: {1}".format(text, media_id))
+
             self.twitter.update_status(
                 status=text,
                 media_ids=[media_id])
 
-            print("Tweet posted: {0}: {1}".format(text, media_id))
+            print("Tweet posted!")

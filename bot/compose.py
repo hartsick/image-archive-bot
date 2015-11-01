@@ -14,10 +14,12 @@ def get_untweeted_record():
 
         if not redis.sismember('tweeted_oids', record.order_no):
             new_record = record
-            if not env_is_dev:
-                redis.sadd('tweeted_oids', record.order_no)
 
     return new_record
+
+def update_tweeted_oids(record):
+    redis = redis_init()
+    redis.sadd('tweeted_oids', record.order_no)
 
 def format_name(full_name):
     print full_name
@@ -63,11 +65,7 @@ def compose_message(record):
 
 def shorten_url(url):
     '''Accepts a to-be shortened URL, then returns a shortened URL using
-    Google's URL Shortener API.
-
-    In the context of this bot, this is both
-    to obscure the source and prevent revealing previews of the URL in
-    the bot's tweets.'''
+    Google's URL Shortener API.'''
 
     post_url = 'https://www.googleapis.com/urlshortener/v1/url'
     payload = {'longUrl': url}
@@ -80,11 +78,18 @@ def shorten_url(url):
 
 def assemble_tweet():
     record = get_untweeted_record()
+    message = compose_message(record)
+
+    # continue to get records until of tweetable length
+    while len(message) > 140:
+        print "Generated tweet too long. Creating another."
+        record = get_untweeted_record()
+        message = compose_message(record)
 
     img = Image.get_image_from_url(record.image_url)
     img_path = Image.save_and_get_image_path(img)
 
-    message = compose_message(record)
+    update_tweeted_oids(record)
 
     params = [message, img_path]
 
