@@ -10,6 +10,8 @@ twitter_cred = [
 
 env_is_dev = True if os.environ.has_key('USER') else False
 
+goog_shortener_key = os.environ.get('LAPL_GOOGLE_SHORTENER_API')
+
 # Set DB url
 if env_is_dev:
     db_cred = os.getenv('DATABASE_URL', 'postgresql://localhost/lapl_bot')

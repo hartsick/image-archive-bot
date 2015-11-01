@@ -1,7 +1,7 @@
 import requests
 import json
 from botutils import images as Image
-from config.common import redis_init, env_is_dev
+from config.common import redis_init, env_is_dev, goog_shortener_key
 from db import DB
 from tweet import Twy_REST
 
@@ -67,11 +67,11 @@ def shorten_url(url):
     '''Accepts a to-be shortened URL, then returns a shortened URL using
     Google's URL Shortener API.'''
 
-    post_url = 'https://www.googleapis.com/urlshortener/v1/url'
+    post_url = 'https://www.googleapis.com/urlshortener/v1/url?key=' + goog_shortener_key
     payload = {'longUrl': url}
     headers = {'content-type': 'application/json'}
 
-    r = requests.post(post_url, data=json.dumps(payload), headers=headers)
+    r = requests.post(post_url, json=payload, headers=headers)
     r_hash = r.json()
 
     return r_hash['id']
